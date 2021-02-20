@@ -21,6 +21,7 @@ sourceSets {
     }
 }
 
+// Jaxb2 dependencies
 dependencies {
     // default JAXB2 libs added by the plugin
     jaxb2 'org.jvnet.jaxb2_commons:jaxb2-basics-runtime:0.9.5'
@@ -37,11 +38,16 @@ dependencies {
 
     jaxb2Implementation 'javax.xml.bind:jaxb-api:2.3.1'
     jaxb2Implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+}
 
-    implementation 'javax.xml.bind:jaxb-api:2.3.1'
-    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+// Main dependencies
+dependencies {
+    implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+    implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.1'
 
     implementation sourceSets.jaxb2.output
+
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.16'
 
     // Logging
     implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.0'
@@ -57,8 +63,8 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.20'
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.0'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }
 
 jaxb2 {
