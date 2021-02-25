@@ -4,15 +4,22 @@ import org.example.Node;
 import org.example.Tag;
 import org.example.jdbs.connection.OSMConnectionProvider;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import java.math.BigInteger;
 import java.sql.*;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class NodeDao {
     protected static final String INSERT_STATEMENT = "insert into nodes values (?, ?, ?, ?, ?, ?, ?, ?, ?) on conflict do nothing";
     protected static final String INSERT_CONNECTION_STATEMENT = "insert into node_tags values (?, ?) on conflict do nothing";
 
+    protected static final String SELECT_STATEMENT = "select * from nodes where id = ?";
+
     protected final PreparedStatement preparedInsert;
     protected final PreparedStatement preparedConnectionInsert;
+    protected final PreparedStatement preparedSelect;
 
     protected final TagDao tagDao = new TagDaoImpl();
     protected final Connection connection;
@@ -22,6 +29,7 @@ public abstract class NodeDao {
             this.connection = OSMConnectionProvider.getConnection();
             this.preparedInsert = connection.prepareStatement(INSERT_STATEMENT);
             this.preparedConnectionInsert = connection.prepareStatement(INSERT_CONNECTION_STATEMENT);
+            this.preparedSelect = connection.prepareStatement(SELECT_STATEMENT);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             throw new RuntimeException(throwables);
@@ -37,6 +45,34 @@ public abstract class NodeDao {
 
             saveConnectionsForNode(node);
         } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            throw new RuntimeException(throwables);
+        }
+    }
+
+    public Optional<Node> getById(long id) {
+        try {
+            this.preparedSelect.setLong(1, id);
+            if (!this.preparedSelect.execute()) {
+                return Optional.empty();
+            }
+            ResultSet resultSet = this.preparedSelect.getResultSet();
+            Node node = new Node();
+            if (resultSet.next()) {
+                node.setId(BigInteger.valueOf(id));
+                node.setChangeset(BigInteger.valueOf(resultSet.getLong("changeset")));
+                node.setTimestamp(DatatypeFactory.newInstance().newXMLGregorianCalendar(resultSet.getDate("timestamp").toString()));
+                node.setLat(resultSet.getDouble("lat"));
+                node.setLon(resultSet.getDouble("lon"));
+                node.setUser(resultSet.getString("username"));
+                node.setUid(BigInteger.valueOf(resultSet.getLong("uid")));
+                node.setVersion(BigInteger.valueOf(resultSet.getLong("version")));
+                node.setVisible(resultSet.getBoolean("visible"));
+            }
+            List<Tag> tags = this.tagDao.getAllByNodeId(id);
+            node.getTag().addAll(tags);
+            return Optional.of(node);
+        } catch (SQLException | DatatypeConfigurationException throwables) {
             throwables.printStackTrace();
             throw new RuntimeException(throwables);
         }

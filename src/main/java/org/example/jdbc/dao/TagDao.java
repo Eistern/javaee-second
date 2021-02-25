@@ -7,4 +7,5 @@ import java.util.List;
 public interface TagDao {
     void saveAll(List<Tag> tags);
     void save(Tag tag);
+    List<Tag> getAllByNodeId(long id);
 }

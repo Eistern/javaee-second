@@ -21,7 +21,7 @@ public class OsmXMLProcessor implements AutoCloseable {
         this.reader = new OsmXMLDecorator(xmlFactory.createXMLStreamReader(xmlStream));
     }
 
-    public List<Node> unmarshalFirstNodes(int n) throws XMLStreamException, JAXBException {
+    public List<Node> unmarshalNextNodes(int n) throws XMLStreamException, JAXBException {
         JAXBContext context = JAXBContext.newInstance(Node.class);
         Unmarshaller unmarshaller = context.createUnmarshaller();
 
